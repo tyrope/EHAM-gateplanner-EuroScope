@@ -1,0 +1,15 @@
+﻿M: Laat gate zien in arrival list (indien dat technisch niet kan, een dedicated plugin list)
+M: Refresh info every X seconds
+
+S: Gebruiker moet een alternatief kunnen invullen in scratchpad
+S: Real life flights moeten herkenbaar zijn
+
+C: Gebruiker moet kunnen aangeven of de gate is doorgegeven aan piloot (tickbox oid)
+C: Gebruiker moet kunnen aangeven of de assigned gate onverhoopt bezet is
+C: Gewijzigde gate terugkoppelen naar planner
+C: Status tickbox terugkoppelen aan piloot
+C: Onverhoopt bezette gate terugkoppelen aan planner
+C: Vluchten door dutchvacc maatjes moeten zichtbaar zijn
+
+W: Zorg voor overbelasting van planner
+

@@ -1,33 +1,45 @@
 #pragma once
 
-#include <Windows.h> // Remove compile errors regarding EuroScopePlugIn.h
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
+#include <Windows.h>
 #include <EuroScopePlugIn.h>
+#include <map>
+#include <iostream>
 
-class CKnownGates {
+using boost::asio::ip::tcp;
+
+using namespace EuroScopePlugIn;
+
+class CGatePlannerJSON {
 public:
-	char* m_Callsign;
-	char* m_Gate;
-	bool m_isRealFlight;
-	bool m_isDutchVaccPilot;
+    CGatePlannerJSON();
+    CGatePlannerJSON(std::string data);
+    virtual ~CGatePlannerJSON();
+    std::map<int, std::string> string_split(std::string data, char delimiter);
+    std::string Callsign;
+    std::string Gate;
+    bool IsRealFlight;
+    bool IsDutchVaccPilot;
 };
 
 class CGatePlannerPlugIn:
-	public EuroScopePlugIn::CPlugIn {
+    public EuroScopePlugIn::CPlugIn {
 
 protected:
-	CKnownGates* m_knownGates;
-	int _getGateListIndex(char* callsign);
+    CGatePlannerJSON GetAPIInfo(std::string callsign);
 
 public:
-	CGatePlannerPlugIn();
-	virtual ~CGatePlannerPlugIn();
-
-	virtual void OnGetTagItem(EuroScopePlugIn::CFlightPlan FlightPlan,
-							  EuroScopePlugIn::CRadarTarget RadarTarget,
-							  int ItemCode,
-							  int TagData,
-							  char sItemString[16],
-							  int * pColorCode,
-							  COLORREF * pRGB,
-							  double * pFontSize);
+    CGatePlannerPlugIn();
+    virtual ~CGatePlannerPlugIn();
+    std::map<std::string, CGatePlannerJSON> m_knownFlightInfo;
+    virtual void OnGetTagItem(EuroScopePlugIn::CFlightPlan FlightPlan,
+                              EuroScopePlugIn::CRadarTarget RadarTarget,
+                              int ItemCode,
+                              int TagData,
+                              char sItemString[16],
+                              int * pColorCode,
+                              COLORREF * pRGB,
+                              double * pFontSize);
+    virtual void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
 };

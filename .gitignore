@@ -1,3 +1,9 @@
+# EuroScope debug files.
+SectorFileProviderDescriptor.txt
+euroscope_sector_providers.txt
+ipaddr.txt
+version.txt
+
 # Non-public documentation
 docs/internal/
 

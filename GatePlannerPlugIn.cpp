@@ -7,17 +7,37 @@
 #define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars"
 #define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars"
 
-const std::string GP_URL = "http://ehamgateplanner.rammeloo.com/api.php?action=retrievegate&callsign=";
+
+//API URL definitions
+const std::string GP_API_HOST = "ehamgateplanner.rammeloo.com";
+//API endpoints
+#ifdef _DEBUG
+const std::string GP_API_ENDPOINT = "/api.php?action=testplugin&callsign=";
+#else
+const std::string GP_API_ENDPOINT = "/api.php?action=retrievegate&callsign=";
+#endif
+
+//faked API responses.
+const std::string GP_API_REPLY_ERR_PREFIX = "{\"callsign\": \"";
+const std::string GP_API_REPLY_ERR_SUFFIX = "\",\"gate\": \"ERR\",\"reallife\": \"unk\",\"isatc\": \"unk\",\"iscommunicated\": \"unk\"}";
 
 // internal ID lists
 const int TAG_ITEM_GATE_ASGN = 1;
 
 //-CGatePlannerJSON definitions----------------------------
 CGatePlannerJSON::CGatePlannerJSON() {
-    CGatePlannerJSON("{\"callsign\": \"XXX9999\",\"gate\": \"UNK\",\"reallife\": \"no\",\"isatc\": \"no\"}");
+    // Act as if we contacted the API and it has no idea what we are talking about.
+    CGatePlannerJSON("{\"callsign\": \"unknown\",\"gate\": \"UNK\",\"reallife\": \"unk\",\"isatc\": \"unk\",\"iscommunicated\": \"unk\"}");
 }
 
 CGatePlannerJSON::CGatePlannerJSON(std::string data) {
+
+    // API result types.
+    API_RESULT_NO = 0x00;
+    API_RESULT_YES = 0x01;
+    API_RESULT_UNK = 0x10;
+    API_RESULT_ERR = 0x11;
+
     //Remove outer {}s
     size_t openCurly = data.find('{'); // Should be 0.
     size_t closeCurly = data.find_last_of('}'); // Should be length-1.
@@ -48,11 +68,26 @@ CGatePlannerJSON::CGatePlannerJSON(std::string data) {
         } else if(key == "gate") {
             this->Gate = value;
         } else if(key == "reallife") {
-            this->IsRealFlight = (value == "yes");
+            if(value == "yes") {
+                this->IsRealFlight = API_RESULT_YES;
+            } else if(value == "no") {
+                this->IsRealFlight = API_RESULT_NO;
+            } else if(value == "unk") {
+                this->IsRealFlight = API_RESULT_UNK;
+            } else {
+                this->IsRealFlight = API_RESULT_ERR;
+            }
         } else if(key == "isatc") {
-            this->IsDutchVaccPilot = (value == "yes");
-        }
-
+            if(value == "yes") {
+                this->IsDutchVaccPilot = API_RESULT_YES;
+            } else if(value == "no") {
+                this->IsDutchVaccPilot = API_RESULT_NO;
+            } else if(value == "unk") {
+                this->IsDutchVaccPilot = API_RESULT_UNK;
+            } else {
+                this->IsDutchVaccPilot = API_RESULT_ERR;
+            }
+        } // end key == "??"
     } // end for pieces
 }
 
@@ -145,42 +180,68 @@ void CGatePlannerPlugIn::OnFlightPlanDisconnect(CFlightPlan FlightPlan) {
 CGatePlannerJSON CGatePlannerPlugIn::GetAPIInfo(std::string callsign) {
     std::string data = "";
 
-    //TODO remove debug & talk to API.
-    return CGatePlannerJSON("{\"callsign\": \""+callsign+"\",\"gate\": \"E19\",\"reallife\": \"no\",\"isatc\": \"no\"}");
+    // Which API endpoint?
+    std::string uri = GP_API_ENDPOINT + callsign;
 
+    //-Here be dragons.-------------------------
+    try {
+        // Initialize the asio service.
+        boost::asio::io_service io_service;
+        // Get a list of endpoints corresponding to the server name.
+        tcp::resolver resolver(io_service);
+        tcp::resolver::query query(GP_API_HOST, "http");
+        tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        // Try each endpoint until we successfully establish a connection.
+        tcp::socket socket(io_service);
+        boost::asio::connect(socket, endpoint_iterator);
+        // Form the request.
+        boost::asio::streambuf request;
+        std::ostream request_stream(&request);
+        request_stream << "GET " << uri << " HTTP/1.0\r\n";
+        request_stream << "Host: " << GP_API_HOST << "\r\n";
+        request_stream << "Accept: */*\r\n";
+        request_stream << "Connection: close\r\n\r\n";
 
-    // Build API endpoint
-    std::string uri = GP_URL + callsign;
-
-    //Boost::Asio things.
-    boost::asio::io_service io_service;
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(uri, "http");
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-    tcp::socket socket(io_service);
-
-    // Connect.
-    boost::asio::connect(socket, endpoint_iterator);
-
-    //Retrieve data
-    for(;;) {
-        boost::array<char, 128> buf;
-        boost::system::error_code error;
-
-        size_t len = socket.read_some(boost::asio::buffer(buf), error);
-        try {
-            if(error == boost::asio::error::eof) {
-                break; // Connection closed cleanly by peer.
-            } else if(error) {
-                throw boost::system::system_error(error); // Some other error.
-            }
-            data = data + buf.data();
-        } catch(std::exception&) {
-            //TODO catch exception
+        // Send the request.
+        boost::asio::write(socket, request);
+        // Read the response line.
+        boost::asio::streambuf response;
+        boost::asio::read_until(socket, response, "\r\n");
+        // Check that response is OK.
+        std::istream response_stream(&response);
+        std::string http_version;
+        response_stream >> http_version;
+        unsigned int status_code;
+        response_stream >> status_code;
+        std::string status_message;
+        std::getline(response_stream, status_message);
+        if(!response_stream || http_version.substr(0, 5) != "HTTP/" || status_code != 200) {
+            return CGatePlannerJSON(GP_API_REPLY_ERR_PREFIX + callsign + GP_API_REPLY_ERR_SUFFIX);
         }
+        // Read the response headers, which are terminated by a blank line.
+        boost::asio::read_until(socket, response, "\r\n\r\n");
+        // Process the response headers.
+        std::string header;
+        while(std::getline(response_stream, header) && header != "\r")
+            continue;
+        // Write whatever content we already have to output.
+        if(response.size() > 0) {
+            std::istream(&response) >> data;
+        }
+        // Read until EOF, writing data to output as we go
+        boost::system::error_code error;
+        while(boost::asio::read(socket, response,
+            boost::asio::transfer_at_least(1), error)) {
+            std::istream(&response) >> data;
+        }
+        if(error != boost::asio::error::eof) {
+            throw boost::system::system_error(error);
+        }
+        //-End of dragons.--------------------------
+    } catch(std::exception&) {
+        return CGatePlannerJSON(GP_API_REPLY_ERR_PREFIX + callsign + GP_API_REPLY_ERR_SUFFIX);
     }
 
     // Parse data
     return CGatePlannerJSON(data);
 }
-

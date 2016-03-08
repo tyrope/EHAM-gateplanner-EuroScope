@@ -1,17 +1,22 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/array.hpp>
 #include <Windows.h>
 #include <EuroScopePlugIn.h>
-#include <map>
-#include <iostream>
+
 
 using boost::asio::ip::tcp;
 
 using namespace EuroScopePlugIn;
 
 class CGatePlannerJSON {
+
+protected:
+    BYTE API_RESULT_NO;
+    BYTE API_RESULT_YES;
+    BYTE API_RESULT_UNK;
+    BYTE API_RESULT_ERR;
+
 public:
     CGatePlannerJSON();
     CGatePlannerJSON(std::string data);
@@ -19,8 +24,8 @@ public:
     std::map<int, std::string> string_split(std::string data, char delimiter);
     std::string Callsign;
     std::string Gate;
-    bool IsRealFlight;
-    bool IsDutchVaccPilot;
+    BYTE IsRealFlight;
+    BYTE IsDutchVaccPilot;
 };
 
 class CGatePlannerPlugIn:

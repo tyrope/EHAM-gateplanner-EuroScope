@@ -1,15 +1,16 @@
-﻿M: Laat gate zien in arrival list (indien dat technisch niet kan, een dedicated plugin list)
+﻿M: Show gate in arrival list
 M: Refresh info every X seconds
+M: Load Gate from API (Special values: UNK TBD OUT ERR)
+M: Assign different gate (& inform API)
 
-S: Gebruiker moet een alternatief kunnen invullen in scratchpad
-S: Real life flights moeten herkenbaar zijn
+S: User can put alternative gate in scratchpad
+S: Real Life flights are identifiable.
+S: (Must?) Changed gate outside of Plugin should create some sort of notification.
 
-C: Gebruiker moet kunnen aangeven of de gate is doorgegeven aan piloot (tickbox oid)
-C: Gebruiker moet kunnen aangeven of de assigned gate onverhoopt bezet is
-C: Gewijzigde gate terugkoppelen naar planner
-C: Status tickbox terugkoppelen aan piloot
-C: Onverhoopt bezette gate terugkoppelen aan planner
-C: Vluchten door dutchvacc maatjes moeten zichtbaar zijn
+C: Controller can mark gate as known-by-pilot (& report back to API).
+C: Controller can mark gate as in use (& report back to API).
+C: Inform pilot of status checkbox status (???)
+C: Flights operated by Dutch VACC members are identifiable.
 
-W: Zorg voor overbelasting van planner
+W: Stress the API. (CPU and Bandwidth wise)
 

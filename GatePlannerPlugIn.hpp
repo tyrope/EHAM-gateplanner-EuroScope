@@ -4,7 +4,6 @@
 #include <Windows.h>
 #include <EuroScopePlugIn.h>
 
-
 using boost::asio::ip::tcp;
 
 using namespace EuroScopePlugIn;

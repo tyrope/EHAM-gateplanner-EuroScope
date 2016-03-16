@@ -1,12 +1,10 @@
-#include "stdafx.h"
-#include "GatePlannerPlugIn.h"
+#include "GatePlannerPlugIn.hpp"
 
 // Plugin information
 #define GP_PLUGIN_NAME      "EHAM Gateplanner"
-#define GP_PLUGIN_VERSION   "0.0.1.1"
+#define GP_PLUGIN_VERSION   "0.0.1_A3"
 #define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars"
 #define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars"
-
 
 //API URL definitions
 const std::string GP_API_HOST = "ehamgateplanner.rammeloo.com";
@@ -41,7 +39,7 @@ CGatePlannerJSON::CGatePlannerJSON(std::string data) {
     //Remove outer {}s
     size_t openCurly = data.find('{'); // Should be 0.
     size_t closeCurly = data.find_last_of('}'); // Should be length-1.
-    data = data.substr(openCurly + 1, closeCurly-1);
+    data = data.substr(openCurly + 1, closeCurly - 1);
 
     //Split by commas
     std::map<int, std::string> jsonset, pieces = string_split(data, ',');
@@ -56,11 +54,11 @@ CGatePlannerJSON::CGatePlannerJSON(std::string data) {
 
         startPos = jsonset[0].find_first_of('"');
         endPos = jsonset[0].find_last_of('"');
-        key = jsonset[0].substr(startPos+1, endPos - startPos-1);
+        key = jsonset[0].substr(startPos + 1, endPos - startPos - 1);
 
         startPos = jsonset[1].find_first_of('"');
         endPos = jsonset[1].find_last_of('"');
-        value = jsonset[1].substr(startPos+1, endPos - startPos-1);
+        value = jsonset[1].substr(startPos + 1, endPos - startPos - 1);
 
         // Assign value to the correct member.
         if(key == "callsign") {
@@ -101,7 +99,7 @@ std::map<int, std::string> CGatePlannerJSON::string_split(std::string data, char
         prevpos = pos + 1;
         c++;
     }
-    // No , found doesn't mean we're done, add the last section.
+    // No comma found doesn't mean we're done, add the last section.
     pieces[c] = data.substr(prevpos);
     return pieces;
 }

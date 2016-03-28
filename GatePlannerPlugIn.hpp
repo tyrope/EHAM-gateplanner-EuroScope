@@ -1,5 +1,6 @@
 #pragma once
 
+#include <time.h>
 #include <boost/asio.hpp>
 #include <Windows.h>
 #include <EuroScopePlugIn.h>
@@ -25,6 +26,7 @@ public:
     std::string Gate;
     BYTE IsRealFlight;
     BYTE IsDutchVaccPilot;
+    time_t lastModified;
 };
 
 class CGatePlannerPlugIn:

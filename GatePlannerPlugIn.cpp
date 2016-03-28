@@ -2,7 +2,7 @@
 
 // Plugin information
 #define GP_PLUGIN_NAME      "EHAM Gateplanner"
-#define GP_PLUGIN_VERSION   "0.0.1_A3"
+#define GP_PLUGIN_VERSION   "0.0.1_A4"
 #define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars"
 #define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars"
 
@@ -17,10 +17,13 @@ const std::string GP_API_ENDPOINT = "/api.php?action=retrievegate&callsign=";
 
 //faked API responses.
 const std::string GP_API_REPLY_ERR_PREFIX = "{\"callsign\": \"";
-const std::string GP_API_REPLY_ERR_SUFFIX = "\",\"gate\": \"ERR\",\"reallife\": \"unk\",\"isatc\": \"unk\",\"iscommunicated\": \"unk\"}";
+const std::string GP_API_REPLY_ERR_SUFFIX = "\",\"gate\": \"ERR\",\"reallife\": \"ERR\",\"isatc\": \"ERR\",\"iscommunicated\": \"ERR\"}";
 
 // internal ID lists
 const int TAG_ITEM_GATE_ASGN = 1;
+
+// Time (in seconds) before we request new information about this flight from the API.
+const int DATA_RETENTION_LENGTH = 30;
 
 //-CGatePlannerJSON definitions----------------------------
 CGatePlannerJSON::CGatePlannerJSON() {
@@ -87,6 +90,9 @@ CGatePlannerJSON::CGatePlannerJSON(std::string data) {
             }
         } // end key == "??"
     } // end for pieces
+
+    // Set the data age.
+    this->lastModified = time(NULL);
 }
 
 CGatePlannerJSON::~CGatePlannerJSON() {}
@@ -153,8 +159,19 @@ void CGatePlannerPlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget Radar
             //---Pre-API Info Gathering------
             std::string cs = FlightPlan.GetCallsign();
 
-            //---API Info Retrieval------
-            CGatePlannerJSON res = GetAPIInfo(cs);
+            CGatePlannerJSON res;
+
+            //---Should we get new info?
+            int lastMod = m_knownFlightInfo[cs].lastModified + DATA_RETENTION_LENGTH;
+            int now = time(NULL);
+
+            if(lastMod < now && lastMod > 0) { // Greater than 0 to prevent unset values being strange.
+                // Information too recent.
+                res = m_knownFlightInfo[cs];
+            } else {
+                //---API Info Retrieval------
+                res = GetAPIInfo(cs);
+            }
 
             //---API Info Verification------
             if(cs == res.Callsign) {

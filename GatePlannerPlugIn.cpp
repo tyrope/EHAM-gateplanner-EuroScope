@@ -3,8 +3,8 @@
 // Plugin information
 #define GP_PLUGIN_NAME      "EHAM Gateplanner"
 #define GP_PLUGIN_VERSION   "0.0.1_A4"
-#define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars"
-#define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars"
+#define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars & Thimo Koolen"
+#define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars & Thimo Koolen"
 
 //API URL definitions
 const std::string GP_API_HOST = "ehamgateplanner.rammeloo.com";

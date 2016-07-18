@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -51,12 +51,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>D:\Visual Studio 12.0\libraries\boost_1_60_0;D:\ATC\EuroScope\PlugInEnvironment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Programs\Boost\boost_1_60_0;E:\Programs\EuroScope\PlugInEnvironment;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D:\ATC\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;D:\Visual Studio 12.0\libraries\boost_1_60_0\lib32-msvc-12.0\libboost_system-vc120-mt-sgd-1_60.lib;D:\Visual Studio 12.0\libraries\boost_1_60_0\lib32-msvc-12.0\libboost_date_time-vc120-mt-sgd-1_60.lib;D:\Visual Studio 12.0\libraries\boost_1_60_0\lib32-msvc-12.0\libboost_regex-vc120-mt-sgd-1_60.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>E:\Programs\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;E:\Programs\Boost\boost_1_60_0\lib32-msvc-14.0\libboost_system-vc140-mt-sgd-1_60.lib;E:\Programs\Boost\boost_1_60_0\lib32-msvc-14.0\libboost_date_time-vc140-mt-sgd-1_60.lib;E:\Programs\Boost\boost_1_60_0\lib32-msvc-14.0\libboost_regex-vc140-mt-sgd-1_60.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Programs\EuroScope\PlugInEnvironment\EuroScopePlugIn.h" />
     <ClInclude Include="GatePlannerPlugIn.hpp" />
   </ItemGroup>
   <ItemGroup>

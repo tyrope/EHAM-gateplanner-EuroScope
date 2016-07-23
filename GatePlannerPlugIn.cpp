@@ -2,18 +2,19 @@
 
 // Plugin information
 #define GP_PLUGIN_NAME      "EHAM Gateplanner"
-#define GP_PLUGIN_VERSION   "0.0.1_A4"
+#define GP_PLUGIN_VERSION   "0.0.1_A6"
 #define GP_PLUGIN_AUTHOR    "Dimitri \"TyRope\" Molenaars & Thimo Koolen"
 #define GP_PLUGIN_COPYRIGHT "Copyright © 2016 Dimitri \"Tyrope\" Molenaars & Thimo Koolen"
 
 //API URL definitions
 const std::string GP_API_HOST = "ehamgateplanner.rammeloo.com";
 //API endpoints
-#ifdef _DEBUG
-const std::string GP_API_ENDPOINT = "/api.php?action=testplugin&callsign=";
-#else
+//#ifdef _DEBUG
+//const std::string GP_API_ENDPOINT = "/api.php?action=testplugin&callsign=";
+//#else
+//const std::string GP_API_ENDPOINT = "/api.php?action=retrievegate&callsign=";
+//#endif
 const std::string GP_API_ENDPOINT = "/api.php?action=retrievegate&callsign=";
-#endif
 
 //faked API responses.
 const std::string GP_API_REPLY_ERR_PREFIX = "{\"callsign\": \"";
@@ -126,6 +127,8 @@ CGatePlannerPlugIn::CGatePlannerPlugIn(void): CPlugIn(COMPATIBILITY_CODE,
 
     // Register Tag item(s).
     RegisterTagItemType("Assigned Gate", TAG_ITEM_GATE_ASGN);
+
+	DisplayUserMessage("EHAM Gateplanner", "Planner", "Gateplanner Plugin loaded. Version: ALPHA", true, true, true, true, false);
 }
 CGatePlannerPlugIn::~CGatePlannerPlugIn(void) {}
 
@@ -177,7 +180,8 @@ void CGatePlannerPlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget Radar
             if(cs == res.Callsign) {
                 m_knownFlightInfo[cs] = res;
                 // Put (new) gate into the ES UI.
-                strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
+                //strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
+				strcpy_s(sItemString, 4, "TE");
             } else {
                 // Invalid callsign?
                 sItemString = "ERR";

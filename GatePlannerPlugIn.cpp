@@ -181,9 +181,8 @@ void CGatePlannerPlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget Radar
             if(cs == res.Callsign) {
                 m_knownFlightInfo[cs] = res;
                 // Put (new) gate into the ES UI.
-                //strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
+                strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
 				DisplayUserMessage("EHAM Gateplanner", "Planner", "Ping", true, true, true, true, false);
-				strcpy_s(sItemString, 4, "TE");
             } else {
                 // Invalid callsign?
                 sItemString = "ERR";

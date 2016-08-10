@@ -150,44 +150,32 @@ void CGatePlannerPlugIn::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget Radar
                                       int ItemCode, int TagData,
                                       char sItemString[16], int * pColorCode,
                                       COLORREF * pRGB, double * pFontSize) {
+	if (ItemCode == TAG_ITEM_GATE_ASGN) {
 
-    // Only work on tag items we actually care about.
-    switch(ItemCode) {
-        case TAG_ITEM_GATE_ASGN:
-            // Check for flightplan validity
-            if(!FlightPlan.IsValid()) {
-                return;
-            }
+		if (RadarTarget.IsValid()) {
+			std::string cs = RadarTarget.GetCallsign();
 
-            //---Pre-API Info Gathering------
-            std::string cs = FlightPlan.GetCallsign();
+			CGatePlannerJSON res;
 
-            CGatePlannerJSON res;
+			int lastMod = m_knownFlightInfo[cs].lastModified + DATA_RETENTION_LENGTH;
+			int now = time(NULL);
 
-            //---Should we get new info?
-            int lastMod = m_knownFlightInfo[cs].lastModified + DATA_RETENTION_LENGTH;
-            int now = time(NULL);
+			if (lastMod < now && lastMod > 0) {
+				res = m_knownFlightInfo[cs];
+				DisplayUserMessage("EHAM Gateplanner", "Planner", "RES", true, true, true, true, false);
+			} else {
+				res = GetAPIInfo(cs);
+				DisplayUserMessage("EHAM Gateplanner", "Planner", "CALL", true, true, true, true, false);
+			}
 
-            if(lastMod < now && lastMod > 0) { // Greater than 0 to prevent unset values being strange.
-                // Information too recent.
-                res = m_knownFlightInfo[cs];
-            } else {
-                //---API Info Retrieval------
-                res = GetAPIInfo(cs);
-            }
-			
-
-            //---API Info Verification------
-            if(cs == res.Callsign) {
-                m_knownFlightInfo[cs] = res;
-                // Put (new) gate into the ES UI.
-                strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
-				DisplayUserMessage("EHAM Gateplanner", "Planner", "Ping", true, true, true, true, false);
-            } else {
-                // Invalid callsign?
-                sItemString = "ERR";
-            }
-    } // End ItemCode switch
+			if (cs == res.Callsign) {
+				m_knownFlightInfo[cs] = res;
+				strcpy_s(sItemString, 4, m_knownFlightInfo[cs].Gate.c_str());
+			} else {
+				sItemString = "ERR";
+			}
+		}
+	}
 }
 
 void CGatePlannerPlugIn::OnFlightPlanDisconnect(CFlightPlan FlightPlan) {
@@ -202,7 +190,6 @@ CGatePlannerJSON CGatePlannerPlugIn::GetAPIInfo(std::string callsign) {
 
     // Which API endpoint?
     std::string uri = GP_API_ENDPOINT + callsign;
-
     //-Here be dragons.-------------------------
     try {
         // Initialize the asio service.
